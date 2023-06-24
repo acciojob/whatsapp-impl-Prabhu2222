@@ -12,7 +12,7 @@ public class Group {
 
 
 
-    public Group(String name, int numberOfParticipants, int numberOfMessages) {
+    public Group(String name, int numberOfParticipants) {
         this.name = name;
         this.numberOfParticipants = numberOfParticipants;
 
