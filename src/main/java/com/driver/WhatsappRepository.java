@@ -79,4 +79,63 @@ public class WhatsappRepository {
         adminMap.put(group,user);
         return "SUCCESS";
     }
+
+    public int removeUser(User user) throws Exception{
+        boolean found =false;
+        Group gp=null;
+        for(Group ele:groupUserMap.keySet()){
+            if(groupUserMap.get(ele).contains(user)){
+                found=true;
+                gp=ele;
+                break;
+            }
+        }
+        if(found==false) throw new Exception("User not found");
+        if(found){
+            for(User ele:adminMap.values()){
+                if(ele==user) throw new Exception("Cannot remove admin");
+            }
+        }
+        //remove the user from groupUserMap
+        groupUserMap.get(gp).remove(user);
+
+        List<Message> toBeRemoved=new ArrayList<>();
+        for(Message msg_ele:senderMap.keySet()){
+            if(senderMap.get(msg_ele)==user){
+                toBeRemoved.add(msg_ele);
+            }
+        }
+        //first removing from senderMap
+        for(Message ele:toBeRemoved){
+            senderMap.remove(ele);
+        }
+        //removing from groupMessageMap
+        groupMessageMap.get(gp).removeAll(toBeRemoved);
+        //removing mobile of the user from userMobile
+        userMobile.remove(user.getMobile());
+
+        return groupUserMap.get(gp).size()+groupMessageMap.get(gp).size()+senderMap.size();
+    }
+
+    public String findMessage(Date start, Date end, int k) throws Exception{
+        List<Message> list=new ArrayList<>();
+        for(Message ele:senderMap.keySet()){
+            if(ele.getTimestamp().after(start) && ele.getTimestamp().before(end)){
+                list.add(ele);
+            }
+        }
+        if(list.size()<k) throw new Exception("K is greater than the number of messages");
+        Collections.sort(list, new Comparator<Message>() {
+            @Override
+            public int compare(Message o1, Message o2) {
+                if(o1.getTimestamp().after(o2.getTimestamp())){
+                    return -1;
+                }
+                return 1;
+            }
+        });
+         return list.get(k-1).getContent();
+
+
+    }
 }
